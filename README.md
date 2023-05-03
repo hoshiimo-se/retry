@@ -1,6 +1,6 @@
 ![](https://pkg.go.dev/badge/github.com/hoshiimo-se/retry.svg)
 ![](https://img.shields.io/github/license/hoshiimo-se/retry)
-![](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2Fhoshiimo_se)
+![](https://img.shields.io/twitter/follow/hoshiimo_se?style=social)
 
 # retry
 Retries using the exponential backoff algorithm can be easily realized.
