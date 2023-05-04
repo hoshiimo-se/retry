@@ -1,11 +1,10 @@
 // The package "retry" allows exponential backoff retries.
 // The default behavior is as follows.
+//  - Jitter : ON
+//  - First retry delay : 100ms
+//  - Maximum delay : 10s
+//  - Maximum retry count : 5
 // ※These can be changed with arguments.
-
-// Jitter : ON
-// First retry delay : 100ms
-// Maximum delay : 10s
-// Maximum retry count : 5
 package retry
 
 import (
