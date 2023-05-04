@@ -6,7 +6,6 @@
 // First retry delay : 100ms
 // Maximum delay : 10s
 // Maximum retry count : 5
-
 package retry
 
 import (
