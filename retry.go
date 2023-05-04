@@ -1,3 +1,12 @@
+// The package "retry" allows exponential backoff retries.
+// The default behavior is as follows.
+// ※These can be changed with arguments.
+
+// Jitter : ON
+// First retry delay : 100ms
+// Maximum delay : 10s
+// Maximum retry count : 5
+
 package retry
 
 import (
@@ -23,18 +32,21 @@ func WithoutJitter() RetryOption {
 	}
 }
 
+// First retry delay
 func WithInitialDelay(delay time.Duration) RetryOption {
 	return func(options *RetryOptions) {
 		options.initialDelay = delay
 	}
 }
 
+// Maximum delay
 func WithMaxDelay(delay time.Duration) RetryOption {
 	return func(options *RetryOptions) {
 		options.maxDelay = delay
 	}
 }
 
+// Maximum retry count
 func WithMaxRetries(maxRetries int) RetryOption {
 	return func(options *RetryOptions) {
 		options.maxRetries = maxRetries
