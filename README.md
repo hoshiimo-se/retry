@@ -7,6 +7,7 @@
 Retries using the exponential backoff algorithm can be easily realized.
 
 ```mermaid
+%%{init:{'theme':'dark'}}%%
 sequenceDiagram
     participant User
     participant Retry Function
