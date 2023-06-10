@@ -6,6 +6,21 @@
 # retry
 Retries using the exponential backoff algorithm can be easily realized.
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Retry Function
+    participant Operation
+
+    User->>Retry Function: Retry(op, opts)
+    loop Until success or max retries
+        Retry Function->>Operation: Execute operation (op)
+        Operation-->>Retry Function: If error
+        Retry Function->>Retry Function: Sleep for delay
+    end
+    Retry Function->>User: Return result or error
+```
+
 # Usage
 ```go
 op := func() (interface{}, error) {
