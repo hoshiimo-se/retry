@@ -19,7 +19,7 @@ sequenceDiagram
         Operation-->>Retry Function: If error
         Retry Function->>Retry Function: Sleep for delay
     end
-    Retry Function->>User: Return result or error
+    Retry Function-->>User: Return result or error
 ```
 
 # Usage
