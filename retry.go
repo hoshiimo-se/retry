@@ -13,7 +13,9 @@ import (
 	"time"
 )
 
-type Operation func() (interface{}, error)
+type Operation func() error
+type OperationOneResult[T any] func() (T, error)
+type OperationTwoResult[T1 any, T2 any] func() (T1, T2, error)
 
 type RetryOptions struct {
 	useJitter    bool
@@ -51,26 +53,37 @@ func WithMaxRetries(maxRetries int) RetryOption {
 	}
 }
 
-func Retry(op Operation, opts ...RetryOption) (interface{}, error) {
-	const defaultInitialDelay = 100 * time.Millisecond
-	const defaultMaxDelay = 10 * time.Second
-	const defaultMaxRetries = 5
+func Retry(op Operation, opts ...RetryOption) error {
+	options := applyOptions(opts...)
+	delay := options.initialDelay
+	for i := 0; i < options.maxRetries; i++ {
+		err := op()
+		if err == nil {
+			return nil
+		}
 
-	options := &RetryOptions{
-		useJitter:    true,
-		initialDelay: defaultInitialDelay,
-		maxDelay:     defaultMaxDelay,
-		maxRetries:   defaultMaxRetries,
-	}
-	for _, opt := range opts {
-		opt(options)
+		if options.useJitter {
+			delay = time.Duration(float64(delay) * (1.5 + rand.Float64()))
+		} else {
+			delay = time.Duration(float64(delay) * 2)
+		}
+		if delay > options.maxDelay {
+			delay = options.maxDelay
+		}
+
+		time.Sleep(delay)
 	}
 
+	return errors.New("Maximum number of retries reached")
+}
+
+func RetryOneResult[T any](op OperationOneResult[T], opts ...RetryOption) (*T, error) {
+	options := applyOptions(opts...)
 	delay := options.initialDelay
 	for i := 0; i < options.maxRetries; i++ {
 		result, err := op()
 		if err == nil {
-			return result, nil
+			return &result, nil
 		}
 
 		if options.useJitter {
@@ -86,4 +99,46 @@ func Retry(op Operation, opts ...RetryOption) (interface{}, error) {
 	}
 
 	return nil, errors.New("Maximum number of retries reached")
+}
+
+func RetryTwoResult[T1 any, T2 any](op OperationTwoResult[T1, T2], opts ...RetryOption) (*T1, *T2, error) {
+	options := applyOptions(opts...)
+	delay := options.initialDelay
+	for i := 0; i < options.maxRetries; i++ {
+		result1, result2, err := op()
+		if err == nil {
+			return &result1, &result2, nil
+		}
+
+		if options.useJitter {
+			delay = time.Duration(float64(delay) * (1.5 + rand.Float64()))
+		} else {
+			delay = time.Duration(float64(delay) * 2)
+		}
+		if delay > options.maxDelay {
+			delay = options.maxDelay
+		}
+
+		time.Sleep(delay)
+	}
+
+	return nil, nil, errors.New("Maximum number of retries reached")
+}
+
+func applyOptions(opts ...RetryOption) *RetryOptions {
+	const defaultInitialDelay = 100 * time.Millisecond
+	const defaultMaxDelay = 10 * time.Second
+	const defaultMaxRetries = 5
+
+	options := &RetryOptions{
+		useJitter:    true,
+		initialDelay: defaultInitialDelay,
+		maxDelay:     defaultMaxDelay,
+		maxRetries:   defaultMaxRetries,
+	}
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	return options
 }

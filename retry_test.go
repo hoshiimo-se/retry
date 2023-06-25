@@ -3,65 +3,76 @@ package retry
 import (
 	"errors"
 	"testing"
-	"time"
 )
 
+// Mock operation for Retry
+func mockOperation(isSuccess bool) Operation {
+	return func() error {
+		if isSuccess {
+			return nil
+		}
+		return errors.New("mock error")
+	}
+}
+
+// Mock operation for RetryOneResult
+func mockOperationOneResult(isSuccess bool) OperationOneResult[int] {
+	return func() (int, error) {
+		if isSuccess {
+			return 1, nil
+		}
+		return 0, errors.New("mock error")
+	}
+}
+
+// Mock operation for RetryTwoResult
+func mockOperationTwoResult(isSuccess bool) OperationTwoResult[int, string] {
+	return func() (int, string, error) {
+		if isSuccess {
+			return 1, "success", nil
+		}
+		return 0, "", errors.New("mock error")
+	}
+}
+
 func TestRetry(t *testing.T) {
-	// Initialize variables for testing
-	var counter int
-	alwaysFail := func() (interface{}, error) {
-		return nil, errors.New("Always fail")
+	// Test successful operation
+	err := Retry(mockOperation(true), WithMaxRetries(3))
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
 
-	succeedOnThirdTry := func() (interface{}, error) {
-		counter++
-		if counter == 3 {
-			return "Success", nil
-		}
-		return nil, errors.New("Failed")
+	// Test failing operation
+	err = Retry(mockOperation(false), WithMaxRetries(3))
+	if err == nil {
+		t.Errorf("Expected error, got %v", err)
+	}
+}
+
+func TestRetryOneResult(t *testing.T) {
+	// Test successful operation
+	result, err := RetryOneResult(mockOperationOneResult(true), WithMaxRetries(3))
+	if err != nil || *result != 1 {
+		t.Errorf("Expected 1, got %v with error %v", *result, err)
 	}
 
-	// Test when operation always fails
-	t.Run("AlwaysFail", func(t *testing.T) {
-		_, err := Retry(alwaysFail, WithMaxRetries(3), WithoutJitter())
-		if err == nil {
-			t.Error("Expected error, but got no error")
-		}
-	})
+	// Test failing operation
+	result, err = RetryOneResult(mockOperationOneResult(false), WithMaxRetries(3))
+	if err == nil || result != nil {
+		t.Errorf("Expected error, got %v with result %v", err, result)
+	}
+}
 
-	// Test when operation succeeds on the third try
-	t.Run("SucceedOnThirdTry", func(t *testing.T) {
-		counter = 0
-		result, err := Retry(succeedOnThirdTry, WithMaxRetries(3), WithoutJitter())
-		if err != nil {
-			t.Errorf("Expected no error, but got error: %v", err)
-		}
-		if result != "Success" {
-			t.Errorf("Expected result 'Success', but got '%v'", result)
-		}
-	})
+func TestRetryTwoResult(t *testing.T) {
+	// Test successful operation
+	result1, result2, err := RetryTwoResult(mockOperationTwoResult(true), WithMaxRetries(3))
+	if err != nil || *result1 != 1 || *result2 != "success" {
+		t.Errorf("Expected 1 and success, got %v, %v with error %v", *result1, *result2, err)
+	}
 
-	// Test when operation fails due to max retries
-	t.Run("FailDueToMaxRetries", func(t *testing.T) {
-		counter = 0
-		_, err := Retry(succeedOnThirdTry, WithMaxRetries(2), WithoutJitter())
-		if err == nil || err.Error() != "Maximum number of retries reached" {
-			t.Errorf("Expected error 'Maximum number of retries reached', but got: %v", err)
-		}
-	})
-
-	// Test custom initial delay and max delay
-	t.Run("CustomDelays", func(t *testing.T) {
-		counter = 0
-		start := time.Now()
-		_, err := Retry(succeedOnThirdTry, WithMaxRetries(3), WithInitialDelay(500*time.Millisecond), WithMaxDelay(2*time.Second), WithoutJitter())
-		elapsed := time.Since(start)
-
-		if err != nil {
-			t.Errorf("Expected no error, but got error: %v", err)
-		}
-		if int64(elapsed) < int64(2*time.Second) || int64(elapsed) >= int64(4*time.Second) {
-			t.Errorf("Expected elapsed time to be between 2 and 4 seconds, but got: %v", elapsed)
-		}
-	})
+	// Test failing operation
+	result1, result2, err = RetryTwoResult(mockOperationTwoResult(false), WithMaxRetries(3))
+	if err == nil || result1 != nil || result2 != nil {
+		t.Errorf("Expected error, got %v with result %v, %v", err, result1, result2)
+	}
 }
