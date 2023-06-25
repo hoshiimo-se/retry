@@ -63,15 +63,15 @@ func TestRetryOneResult(t *testing.T) {
 	}
 }
 
-func TestRetryTwoResult(t *testing.T) {
+func TestRetryTwoResults(t *testing.T) {
 	// Test successful operation
-	result1, result2, err := RetryTwoResult(mockOperationTwoResult(true), WithMaxRetries(3))
+	result1, result2, err := RetryTwoResults(mockOperationTwoResult(true), WithMaxRetries(3))
 	if err != nil || *result1 != 1 || *result2 != "success" {
 		t.Errorf("Expected 1 and success, got %v, %v with error %v", *result1, *result2, err)
 	}
 
 	// Test failing operation
-	result1, result2, err = RetryTwoResult(mockOperationTwoResult(false), WithMaxRetries(3))
+	result1, result2, err = RetryTwoResults(mockOperationTwoResult(false), WithMaxRetries(3))
 	if err == nil || result1 != nil || result2 != nil {
 		t.Errorf("Expected error, got %v with result %v, %v", err, result1, result2)
 	}

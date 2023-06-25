@@ -23,12 +23,31 @@ sequenceDiagram
 ```
 
 # Usage
+## No return value
 ```go
-op := func() (interface{}, error) {
-  fmt.Printf("some form of processing...（%v）\n", time.Now())
-  return nil, errors.New("Error!!")
+op := func() error {
+    return errors.New("Error!!")
 }
-result, err := retry.Retry(op)
+
+err := retry.Retry(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
+```
+
+## One return value
+```go
+op := func() (string, error) {
+    return "", errors.New("Error!!")
+}
+
+result, err := retry.RetryOneResult(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
+```
+
+## Two return values
+```go
+	op := func() (string, bool, error) {
+		return "", false, errors.New("Error!!")
+	}
+
+	result1, result2, err := retry.RetryTwoResult(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
 ```
 
 # License

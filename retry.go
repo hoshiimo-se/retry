@@ -101,7 +101,7 @@ func RetryOneResult[T any](op OperationOneResult[T], opts ...RetryOption) (*T, e
 	return nil, errors.New("Maximum number of retries reached")
 }
 
-func RetryTwoResult[T1 any, T2 any](op OperationTwoResult[T1, T2], opts ...RetryOption) (*T1, *T2, error) {
+func RetryTwoResults[T1 any, T2 any](op OperationTwoResult[T1, T2], opts ...RetryOption) (*T1, *T2, error) {
 	options := applyOptions(opts...)
 	delay := options.initialDelay
 	for i := 0; i < options.maxRetries; i++ {
