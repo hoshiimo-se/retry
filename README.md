@@ -47,7 +47,7 @@ result, err := retry.RetryOneResult(op, retry.WithInitialDelay(2*time.Second), r
 		return "", false, errors.New("Error!!")
 	}
 
-	result1, result2, err := retry.RetryTwoResult(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
+	result1, result2, err := retry.RetryTwoResults(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
 ```
 
 # License
