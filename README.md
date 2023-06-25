@@ -43,11 +43,11 @@ result, err := retry.RetryOneResult(op, retry.WithInitialDelay(2*time.Second), r
 
 ## Two return values
 ```go
-	op := func() (string, bool, error) {
-		return "", false, errors.New("Error!!")
-	}
+op := func() (string, bool, error) {
+	return "", false, errors.New("Error!!")
+}
 
-	result1, result2, err := retry.RetryTwoResults(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
+result1, result2, err := retry.RetryTwoResults(op, retry.WithInitialDelay(2*time.Second), retry.WithMaxRetries(3))
 ```
 
 # License
